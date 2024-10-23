@@ -1,0 +1,17 @@
+numpy
+openai~=0.28.0
+pandas
+seaborn
+scikit-learn
+fastapi
+python-dotenv
+pymongo
+pydantic
+redis
+python-multipart
+uvicorn
+pytest
+tiktoken
+rq
+spacy
+
