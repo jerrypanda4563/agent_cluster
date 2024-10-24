@@ -1,5 +1,5 @@
 import openai.error
-from app.internal import chunking
+from app.internal.agent import chunking
 
 from app import settings
 

@@ -1,6 +1,6 @@
 import spacy
 from typing import List, Optional
-from app.internal.tokenizer import count_tokens
+from app.internal.agent.tokenizer import count_tokens
 
 
 tokenizer = spacy.load("en_core_web_sm")

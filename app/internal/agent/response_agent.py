@@ -1,8 +1,8 @@
-from app.internal import agent_data
-from app.internal.tokenizer import count_tokens
+from app.internal.agent import agent_data
+from app.internal.agent.tokenizer import count_tokens
 from app.api_clients.mclapsrl import mclapsrlClient
 from app import settings
-from app.internal import chunking
+from app.internal.agent import chunking
 from app import mongo_config
 import random
 

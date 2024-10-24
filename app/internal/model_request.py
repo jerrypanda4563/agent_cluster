@@ -1,12 +1,8 @@
 from app import settings
 import openai
 from openai.error import OpenAIError, Timeout, ServiceUnavailableError, RateLimitError, APIError
-from typing import Optional, Literal
 from app.api_clients import mclapsrl
-import numpy as np
 import time
-import traceback
-import warnings
 import logging
 
 

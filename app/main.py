@@ -37,6 +37,7 @@ async def initialize_simulation_instance(instance_params: SimulationInstance):
 
     process = multiprocessing.Process(target = instance.simulate)
     process.start()
+    logger.info(f"Simulation instance {instance_id} started")
     return instance_id
 
 

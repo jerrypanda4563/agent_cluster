@@ -7,7 +7,6 @@ RUN python -m spacy download en_core_web_sm
 
 COPY ./app /code/app
 COPY ./tests /code/tests
-COPY ./simulations /code/simulations
 
 
 EXPOSE 80
