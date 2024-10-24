@@ -11,14 +11,13 @@ import spacy
 from typing import List, Optional
 import time
 import openai
-from openai.error import OpenAIError, Timeout, ServiceUnavailableError, RateLimitError
 from sklearn.metrics.pairwise import cosine_similarity as cs
 from concurrent.futures import ThreadPoolExecutor
 from app.data_models import AgentParameters
 import gc
 from app.internal.embedding_request import embed
 from app.internal.model_request import model_response
-import warnings
+
 import logging
 
 openai.api_key = settings.OPEN_AI_KEY

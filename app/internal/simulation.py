@@ -24,10 +24,13 @@ logger = logging.getLogger(__name__)
 
 
 
+####ideally all params here should be already parsed as json so that can be celery compatible
+
 
 class Simulator():
     #unwraps agent parameters and performs initialization of agent 
-    def __init__(self, request_id: str, survey: Dict, demographic: Dict, agent_params: AgentParameters, retries: Optional[int] = 3):
+    #request id is the sim_id from the request object
+    def __init__(self, request_id: str, survey: Dict, demographic: Dict, agent_params: dict, retries: Optional[int] = 3):
         
         self.request_id = request_id
         self.simulator_id = str(uuid.uuid4())
@@ -35,14 +38,14 @@ class Simulator():
         
 
         self.survey_context: list[str] = survey["context"]
-        self.json_mode: bool = agent_params.json_mode
+        self.json_mode: bool = agent_params["json_mode"]
         
-        self.iterator = Iterator(json_mode = agent_params.json_mode, iteration_questions = survey["questions"])
+        self.iterator = Iterator(json_mode = agent_params["json_mode"], iteration_questions = survey["questions"])
         self.demographic: Dict = demographic["demographic"]
         self.persona: Dict = demographic["persona"]
 
         self.simulator_instructions = initialization_prompt(self.demographic, self.persona)
-        self.simulator_params = agent_params
+        self.simulator_params = AgentParameters(**agent_params)
         
         self.retry_policy = retries
         
@@ -52,25 +55,47 @@ class Simulator():
         return db
         
     def simulate(self) -> None:
+
+        try:
+            database = self.initialize_database()
+        except Exception as e:
+            logger.error(f"Error in initializing database: {e}")
+            raise Exception("Error in initializing database")
         
-        database = self.initialize_database()
-        
-        simulator = response_agent.Agent(
-            agent_id = self.simulator_id,
-            instruction = self.simulator_instructions,
-            params = self.simulator_params
-        )
+        try:
+            simulator = response_agent.Agent(
+                agent_id = self.simulator_id,
+                instruction = self.simulator_instructions,
+                params = self.simulator_params
+            )
+        except Exception as e:
+            logger.error(f"Error in initializing simulator: {e}")
+            database["results"].insert_one({"_id": self.simulator_id,
+                                  "request_id": self.request_id, 
+                                  "demographic": self.demographic, 
+                                  "persona": self.persona, 
+                                  "run_status": False,
+                                  "response_data": []})
+            raise Exception("Error in initializing simulator")
 
         database["results"].insert_one({"_id": self.simulator_id,
                                   "request_id": self.request_id, 
                                   "demographic": self.demographic, 
                                   "persona": self.persona, 
+                                  "run_status": True,
                                   "response_data": []})
+        database["requests"].update_one(request_object_query, {"$push": {"result_ids": self.simulator_id}})
+
         result_object_query = {"_id": self.simulator_id}
         request_object_query = {"_id": self.request_id}
-
-        for context in self.survey_context:
-            simulator.inject_memory(context)
+        
+        try:
+            for context in self.survey_context:
+                simulator.inject_memory(context)
+        except Exception as e:
+            logger.error(f"Error in injecting memory: {e}")
+            database["results"].update_one(result_object_query, {"$set": {"run_status": False}})
+            raise Exception("Error in injecting memory")
         
         #iterating though generator object
         for _ in range(self.iterator.n_of_iter):
@@ -85,7 +110,7 @@ class Simulator():
                             answer = response_json["answer"]
                             schema["answer"] = answer
                         except Exception as e: 
-                            print(f"Warning: JSON error in simulation run for simulator {self.simulator_id}: {e}")
+                            logger.error(f"Warning: JSON error in simulation run for simulator {self.simulator_id}: {e}")
                             schema["answer"] = result
                     else:
                         schema["answer"] = result
@@ -104,21 +129,12 @@ class Simulator():
 
         #updating request object once all iterations are completed
         database["requests"].update_one(request_object_query, {"$inc":{"completed_runs": 1}})
-        database["requests"].update_one(request_object_query, {"$push": {"result_ids": self.simulator_id}})
+        database["results"].update_one(result_object_query, {"$set": {"run_status": False}})
             
 
         
         
-async def worker_function(sim_id: str, iterations: dict, agent_profile: dict, agent_params: dict) -> str:
-    instance =  Simulator(
-        request_id = sim_id,
-        survey = iterations,
-        demographic = agent_profile,
-        agent_params = agent_params
-    )
-    instance_id = instance.simulator_id
-    instance.simulate()
-    return instance_id
+
 
         
 
