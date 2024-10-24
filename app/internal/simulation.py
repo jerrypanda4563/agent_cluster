@@ -99,6 +99,7 @@ class Simulator():
             raise Exception("Error in injecting memory")
         
         #iterating though generator object
+        n_errors = 0
         for _ in range(self.iterator.n_of_iter):
             current_iteration = self.iterator.iter()
             schema = self.iterator.iterations[_]
@@ -111,7 +112,7 @@ class Simulator():
                             answer = response_json["answer"]
                             schema["answer"] = answer
                         except Exception as e: 
-                            logger.error(f"Warning: JSON error in simulation run for simulator {self.simulator_id}: {e}")
+                            logger.warning(f"Warning: JSON error in simulation run for simulator {self.simulator_id}: {e}")
                             schema["answer"] = result
                     else:
                         schema["answer"] = result
@@ -119,6 +120,7 @@ class Simulator():
 
                 except (openai.error.ServiceUnavailableError, openai.error.Timeout, openai.error.RateLimitError) as e:
                     logger.error(f'OpenAI error in simulation run for simulator {self.simulator_id} (Attempt {i + 1}): for question {_+1}. {e}')
+                    n_errors += 1
             else:
                 logger.error(f"Maximum retries reached for question: {json.dumps(schema)}. Skipping to next question.")
                 schema["answer"] = None
@@ -131,6 +133,8 @@ class Simulator():
         #updating request object once all iterations are completed
         database["requests"].update_one(request_object_query, {"$inc":{"completed_runs": 1}})
         database["results"].update_one(result_object_query, {"$set": {"run_status": False}})
+
+        logger.info(f"Simulation run for simulator {self.simulator_id} completed with {n_errors} errors.")
             
 
         
