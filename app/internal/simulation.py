@@ -55,7 +55,9 @@ class Simulator():
         return db
         
     def simulate(self) -> None:
-
+        result_object_query = {"_id": self.simulator_id}
+        request_object_query = {"_id": self.request_id}
+        
         try:
             database = self.initialize_database()
         except Exception as e:
@@ -86,8 +88,7 @@ class Simulator():
                                   "response_data": []})
         database["requests"].update_one(request_object_query, {"$push": {"result_ids": self.simulator_id}})
 
-        result_object_query = {"_id": self.simulator_id}
-        request_object_query = {"_id": self.request_id}
+ 
         
         try:
             for context in self.survey_context:
