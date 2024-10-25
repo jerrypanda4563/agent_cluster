@@ -82,22 +82,8 @@ class Simulator():
             )
         except Exception as e:
             logger.error(f"Error in initializing simulator: {e}")
-            database["results"].insert_one({"_id": self.simulator_id,
-                                  "request_id": self.request_id, 
-                                  "demographic": self.demographic, 
-                                  "persona": self.persona, 
-                                  "run_status": False,
-                                  "response_data": []})
+            database["results"].update_one(result_object_query, {"$set": {"run_status": False}})
             raise Exception("Error in initializing simulator")
-
-        database["results"].insert_one({"_id": self.simulator_id,
-                                  "request_id": self.request_id, 
-                                  "demographic": self.demographic, 
-                                  "persona": self.persona, 
-                                  "run_status": True,
-                                  "response_data": []})
-        database["requests"].update_one(request_object_query, {"$push": {"result_ids": self.simulator_id}})
-
  
         
         try:
