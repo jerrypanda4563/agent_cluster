@@ -148,7 +148,7 @@ class SurveyModel(BaseModel):
 
 class AgentProfile(BaseModel):
     persona: str
-    demographic: DemographicModel
+    demographic: dict
 
 class AgentParameters(BaseModel):
 

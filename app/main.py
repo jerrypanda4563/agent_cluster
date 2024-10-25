@@ -23,7 +23,7 @@ async def initialize_simulation_instance(instance_params: SimulationInstance) ->
     #unwrapping params
     sim_id = instance_params.simulation_id
     agent_params = instance_params.agent_params.dict()
-    agent_profile = instance_params.agent_profile.dict()
+    agent_profile = instance_params.agent_profile.dict()  #{persona: str    demographic: dict}
     iterations = instance_params.iterations.dict()
 
     #starting the worker function
