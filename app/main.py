@@ -19,7 +19,7 @@ async def root():
 
 
 @app.post("/simulate")
-async def initialize_simulation_instance(instance_params: SimulationInstance):
+async def initialize_simulation_instance(instance_params: SimulationInstance) -> str:
     #unwrapping params
     sim_id = instance_params.simulation_id
     agent_params = instance_params.agent_params.dict()
