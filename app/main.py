@@ -26,7 +26,7 @@ async def initialize_simulation_instance(instance_params: SimulationInstance) ->
     agent_profile = instance_params.agent_profile.dict()  #{persona: str    demographic: dict}
     iterations = instance_params.iterations.dict()
 
-    #starting the worker function
+    #starting the worker function, database result object also initialized
     instance =  Simulator(
         request_id = sim_id,
         survey = iterations,

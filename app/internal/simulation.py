@@ -48,18 +48,28 @@ class Simulator():
         self.simulator_params = AgentParameters(**agent_params)
         
         self.retry_policy = retries
+        self.initialize_database()
         
-    def initialize_database(self):
+    def initialize_database(self) -> None:
         mongo=MongoClient(settings.MONGO_URI, server_api=ServerApi('1'))
         db = mongo["simulations"]
-        return db
+        request_object_query = {"_id": self.request_id}
+        db["results"].insert_one({"_id": self.simulator_id,
+                                  "request_id": self.request_id, 
+                                  "demographic": self.demographic, 
+                                  "persona": self.persona, 
+                                  "run_status": True,
+                                  "response_data": []})
+        db["requests"].update_one(request_object_query, {"$push": {"result_ids": self.simulator_id}})
+
         
     def simulate(self) -> None:
         result_object_query = {"_id": self.simulator_id}
         request_object_query = {"_id": self.request_id}
         
         try:
-            database = self.initialize_database()
+            mongo = MongoClient(settings.MONGO_URI, server_api=ServerApi('1'))
+            database = mongo["simulations"]
         except Exception as e:
             logger.error(f"Error in initializing database: {e}")
             raise Exception("Error in initializing database")
