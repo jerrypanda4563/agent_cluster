@@ -5,6 +5,7 @@ import logging
 import multiprocessing
 from typing import Optional
 from app.mongo_config import database
+import traceback
 
 
 app = fastapi.FastAPI()
@@ -20,25 +21,30 @@ async def root():
 
 @app.post("/simulate")
 async def initialize_simulation_instance(instance_params: SimulationInstance) -> str:
-    #unwrapping params
-    sim_id = instance_params.simulation_id
-    agent_params = instance_params.agent_params.dict()
-    agent_profile = instance_params.agent_profile.dict()  #{persona: str    demographic: dict}
-    iterations = instance_params.iterations.dict()
+    try:
+        #unwrapping params
+        sim_id = instance_params.simulation_id
+        agent_params = instance_params.agent_params.dict()
+        agent_profile = instance_params.agent_profile.dict()  #{persona: str    demographic: dict}
+        iterations = instance_params.iterations.dict()
 
-    #starting the worker function, database result object also initialized
-    instance =  Simulator(
-        request_id = sim_id,
-        survey = iterations,
-        demographic = agent_profile,
-        agent_params = agent_params
-    )
-    instance_id = instance.simulator_id
+        #starting the worker function, database result object also initialized
+        instance =  Simulator(
+            request_id = sim_id,
+            survey = iterations,
+            demographic = agent_profile,
+            agent_params = agent_params
+        )
+        instance_id = instance.simulator_id
 
-    process = multiprocessing.Process(target = instance.simulate)
-    process.start()
-    logger.info(f"Simulation instance {instance_id} started")
-    return instance_id
+        process = multiprocessing.Process(target = instance.simulate)
+        process.start()
+        logger.info(f"Simulation instance {instance_id} started")
+        return instance_id
+    except Exception as e:
+        logger.error(f"Error in initializing simulation instance: {e}")
+        traceback.print_exc()
+        raise Exception("Error in initializing simulation instance")
 
 
 @app.get("/instance/result")
