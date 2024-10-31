@@ -54,7 +54,7 @@ def embed(text: str, embedding_model: Optional[str] = "text-embedding-3-small", 
         
         except (OpenAIError, Timeout, ServiceUnavailableError, APIError) as e:
             logger.error(f"server returned an error while embedding the text: {text}. {e}")
-            rate_limiter.model_break(embedding_model, 10)
+            time.sleep(5)
             retries -= 1
             continue
         except RateLimitError as e:
@@ -65,7 +65,7 @@ def embed(text: str, embedding_model: Optional[str] = "text-embedding-3-small", 
             
         except Exception as e:
             logger.error(f"an exception occurred while embedding the text: {text}. {e}")
-            rate_limiter.model_break(embedding_model, 10)
+            time.sleep(5)
             retries -= 1
             continue
 
