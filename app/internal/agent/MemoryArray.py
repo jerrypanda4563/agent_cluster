@@ -56,7 +56,7 @@ class ChunksList(pydantic.BaseModel):
         top_indices = [index for index, _ in top_n_similarities]
         return [self.chunks[index] for index in top_indices]
         
-
+#fix number of principle components based on a ratio of the embedding dimension
 class ChunksArray(pydantic.BaseModel):
 
     chunks: list[Chunk] = []

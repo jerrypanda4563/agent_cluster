@@ -43,8 +43,9 @@ class Simulator():
         self.iterator = Iterator(json_mode = agent_params["json_mode"], iteration_questions = survey["questions"])
         self.demographic: Dict = demographic["demographic"]
         self.persona: Dict = demographic["persona"]
+        self.instructions = agent_params["instructions"]
 
-        self.simulator_instructions = initialization_prompt(self.demographic, self.persona)
+        self.simulator_instructions = initialization_prompt(self.demographic, self.persona, self.instructions)
         self.simulator_params = AgentParameters(**agent_params)
         
         self.retry_policy = retries

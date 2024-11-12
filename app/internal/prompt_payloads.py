@@ -1,4 +1,5 @@
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
+
 import json
 
 
@@ -73,11 +74,14 @@ def linear_scale_prompt(question_dict: Dict[str, Any], JSON: bool) -> str:
 
 
 ## agent initialization prompt: input is demographic parameters, initial world state/ instructions from survey body, output is a string
-def initialization_prompt(demographic: Dict, persona: str) -> str: 
+def initialization_prompt(demographic: Dict, persona: str, instructions: Optional[str] = None) -> str: 
     demographic_information = '\n'.join([f"{k}: {v}" for k, v in demographic.items()])
     prompt_payload = f"You are not a helpful assistant. You are a person with the following identity:\n"+f"{demographic_information}\n\n" + f"You should behave according to the persona given: \n {persona}" + "You must think and behave as this identity when responding to all queries."
-    return prompt_payload
-
+    if instructions is None:
+        return prompt_payload
+    else:
+        instructional_prompt = prompt_payload +f"\n You are also given additional instructions which you must follow: \n {instructions}"
+        return instructional_prompt
     
 class Iterator:
 

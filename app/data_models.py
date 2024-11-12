@@ -158,6 +158,7 @@ class AgentParameters(BaseModel):
     agent_temperature: Optional[float] = 0.1   #between 0 and 1, if 1 means that the agent is erratic and nuts
     existance_date: Optional[str] = datetime.date.today().isoformat()
     json_mode: Optional[bool] = True
+    instructions: Optional[str] = None
 
     #st_memory_params
     memory_context_length: Optional[int] = 4196 #in tokens
